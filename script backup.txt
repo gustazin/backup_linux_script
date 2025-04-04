@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Definir diretórios
+SOURCE_DIR="/var/www/itnsa"
+BACKUP_DIR="/backup"
+GPG_RECIPIENT="seu-email@example.com"  # Substitua pelo seu e-mail GPG
+
+# Verifica se o diretório de backup existe, senão cria
+mkdir -p "$BACKUP_DIR"
+
+# Loop infinito para realizar o backup a cada 1 minuto
+while true; do
+    # Obtém a data e hora no formato DD-MM-YYYY-HH:MM:SS
+    TIMESTAMP=$(date +"%d-%m-%Y-%H:%M:%S")
+
+    # Nome do arquivo de backup
+    BACKUP_FILE="$BACKUP_DIR/${TIMESTAMP}-backup.tar.gz"
+
+    # Criar o backup compactado
+    tar -czf "$BACKUP_FILE" "$SOURCE_DIR"
+
+    # Criptografar o backup usando GPG
+    gpg --yes --encrypt --recipient "$GPG_RECIPIENT" "$BACKUP_FILE"
+
+    # Remover o arquivo original não criptografado por segurança
+    rm -f "$BACKUP_FILE"
+
+    echo "Backup realizado e criptografado em: ${BACKUP_FILE}.gpg"
+
+    # Aguardar 60 segundos antes do próximo backup
+    sleep 60
+done
